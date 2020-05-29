@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -14,6 +15,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 private const val TAG = "CrimeListFragment"
+
+private const val REGULAR_CRIME_ITEM_TYPE = 0
+private const val SERIOUS_CRIME_ITEM_TYPE = 1
 
 class CrimeListFragment : Fragment() {
 
@@ -56,11 +60,20 @@ class CrimeListFragment : Fragment() {
     }
 
     /*
+    Abstract class to have CrimeHolder and SeriousCrimeHolder has its children to use the same bind
+    method. Similar bind methods but different executions.
+    Necessary in order to run in the adapter depending on the crime.
+     */
+    private abstract inner class AbstractCrimeHolder(view: View) : RecyclerView.ViewHolder(view) {
+
+        abstract fun bind(crime: Crime)
+    }
+    /*
     CrimeHolder stores a reference to an item's view (sometimes references a specific widgets
     within that vieww.
     */
     private inner class CrimeHolder(view: View)
-        : RecyclerView.ViewHolder(view), View.OnClickListener {
+        : AbstractCrimeHolder(view), View.OnClickListener {
 
         private lateinit var crime: Crime
 
@@ -73,7 +86,7 @@ class CrimeListFragment : Fragment() {
         }
 
         //stores the title and the date into the title and date widgets (changes to current crime)
-        fun bind(crime: Crime) {
+        override fun bind(crime: Crime) {
             this.crime = crime
             titleTextView.text = this.crime.title
             dateTextView.text = this.crime.date.toString()
@@ -91,24 +104,49 @@ class CrimeListFragment : Fragment() {
 
     }
 
-    private inner class CrimeAdapter (var crimes: List<Crime>) : RecyclerView.Adapter<CrimeHolder>() {
+    private inner class SeriousCrimeHolder(view: View) : AbstractCrimeHolder(view) {
+
+        private lateinit var crime: Crime
+
+        val contactPoliceButton: Button = itemView.findViewById(R.id.contact_police_button)
+
+        init {
+            contactPoliceButton.setOnClickListener {
+                val callingMessage = getString(R.string.contact_police_message, crime.title)
+                Toast.makeText(context, callingMessage, Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        override fun bind(crime: Crime) {
+            this.crime = crime
+        }
+    }
+    private inner class CrimeAdapter (var crimes: List<Crime>) : RecyclerView.Adapter<AbstractCrimeHolder>() {
 
         //Responsible for creating the view holder (CrimeHolder), no data is put into CrimeHolder
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CrimeHolder {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AbstractCrimeHolder {
             Log.d(TAG, "Creating a view holder")
-            val view = layoutInflater.inflate(R.layout.list_item_crime, parent, false)
-            return CrimeHolder(view)
+            if (viewType == SERIOUS_CRIME_ITEM_TYPE) {
+                val view = layoutInflater.inflate(R.layout.list_item_serious_crime, parent, false)
+                return SeriousCrimeHolder(view)
+            } else {
+                val view = layoutInflater.inflate(R.layout.list_item_crime, parent, false)
+                return CrimeHolder(view)
+            }
         }
 
         //Says how many items we have in the list
         override fun getItemCount() = crimes.size
 
         //Seting the data on the ViewHolder (CrimeHolder), sets data into CrimeHolder
-        override fun onBindViewHolder(holder: CrimeHolder, position: Int) {
+        override fun onBindViewHolder(holder: AbstractCrimeHolder, position: Int) {
             Log.d(TAG, "Binding a view holder")
             val crime = crimes[position]
             holder.bind(crime)
         }
+
+        override fun getItemViewType(position: Int) =
+            if (crimes[position].requiresPolice) { SERIOUS_CRIME_ITEM_TYPE } else{ REGULAR_CRIME_ITEM_TYPE }
     }
 
 
