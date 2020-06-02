@@ -2,7 +2,9 @@ package com.bignerdranch.android.criminalintent.database
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
+import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import com.bignerdranch.android.criminalintent.Crime
 import java.util.*
 
@@ -18,5 +20,13 @@ interface CrimeDao{
     //Gets a specific crime
     @Query("SELECT * FROM crime WHERE id=(:id)")
     fun getCrime(id: UUID): LiveData<Crime?>
+
+    //Uses the ID stored in that crime to find the associated row and updates the data
+    @Update
+    fun updateCrime(crime: Crime)
+
+    //Adds the crime to the database
+    @Insert
+    fun addCrime(crime: Crime)
 
 }
