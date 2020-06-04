@@ -7,5 +7,7 @@
     <string name="crime_details_label">Details</string>
     <string name="crime_solved_label">Solved</string>
 
+    //Chapter 14 (Menu)
+    <string name="new_crime">New Crime</string>
 
 </resources>

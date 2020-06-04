@@ -3,9 +3,7 @@ package com.bignerdranch.android.criminalintent
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -42,6 +40,13 @@ class CrimeListFragment : Fragment() {
         super.onAttach(context)
         callbacks = context as Callbacks?
     }
+
+    //Tell the fragmentManager that your fragment should receive a call to Menu
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -75,6 +80,26 @@ class CrimeListFragment : Fragment() {
     override fun onDetach() {
         super.onDetach()
         callbacks = null
+    }
+
+    //fun for creating the menu and responding to the selection of an action item
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.fragment_crime_list, menu)
+    }
+
+    //Respond to MenuItem selection by creating a new crime, saving it to the database, and then
+    //notifying the parent activity that the new crime has been selected
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.new_crime -> {
+                val crime = Crime()
+                crimeListViewModel.addCrime(crime)
+                callbacks?.onCrimeSelected(crime.id)
+                true
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
     }
 
     //Connects the Adapter to RecyclerView to display UI
