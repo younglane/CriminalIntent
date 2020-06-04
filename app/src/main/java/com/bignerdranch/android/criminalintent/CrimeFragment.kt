@@ -11,21 +11,26 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import android.text.format.DateFormat
 import java.util.*
 
 private const val TAG = "CrimeFragment"
 private const val ARG_CRIME_ID = "crime_id"
 private const val DIALOG_DATE = "DialogDate"
+private const val DIALOG_TIME = "DialogTime"
 private const val REQUEST_DATE = 0
+private const val REQUEST_TIME = 1
 
 //CrimeFragment is a controller that interacts with model and view objects.
-class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
+class CrimeFragment : Fragment(), DatePickerFragment.Callbacks, TimePickerFragment.Callbacks {
 
     private lateinit var crime: Crime
     private lateinit var titleField: EditText
     private lateinit var dateButton: Button
+    private lateinit var timeButton: Button
     private lateinit var solvedCheckBox: CheckBox
 
     private val crimeDetailViewModel: CrimeDetailViewModel by lazy {
@@ -49,6 +54,7 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
         val view = inflater.inflate(R.layout.fragment_crime, container, false)
         titleField = view.findViewById(R.id.crime_title) as EditText
         dateButton = view.findViewById(R.id.crime_date) as Button
+        timeButton = view.findViewById(R.id.crime_time) as Button
         solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
         return view
     }
@@ -102,6 +108,14 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
                 show(this@CrimeFragment.requireFragmentManager(), DIALOG_DATE)
             }
         }
+
+        //Insert the function to pick time
+        timeButton.setOnClickListener{
+            TimePickerFragment.newInstance(crime.date).apply {
+                setTargetFragment(this@CrimeFragment, REQUEST_TIME)
+                show(this@CrimeFragment.requireFragmentManager(), DIALOG_TIME)
+            }
+        }
     }
 
     //saves crime to the database
@@ -115,9 +129,21 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
         updateUI()
     }
 
+    override fun onTimeSelected(date: Date) {
+        crime.date = date
+        updateUI()
+    }
+
     private fun updateUI() {
+        //Needed for the two time buttons
+        val dateText = DateFormat.getMediumDateFormat(context).format(crime.date)
+        val timeText = DateFormat.getTimeFormat(context).format(crime.date)
+
         titleField.setText(crime.title)
-        dateButton.text = crime.date.toString()
+        //insert date and time text into the buttons
+        dateButton.text = dateText
+        timeButton.text = timeText
+
         solvedCheckBox.apply {
             isChecked = crime.isSolved
             jumpDrawablesToCurrentState()
@@ -138,5 +164,4 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
             }
         }
     }
-
 }

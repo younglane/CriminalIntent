@@ -2,17 +2,19 @@ package com.bignerdranch.android.criminalintent
 
 import android.app.DatePickerDialog
 import android.app.Dialog
+import android.app.TimePickerDialog
 import android.os.Bundle
 import android.widget.DatePicker
+import android.widget.TimePicker
 import androidx.fragment.app.DialogFragment
 import java.util.*
 
 private const val ARG_DATE = "date"
 
-class DatePickerFragment : DialogFragment() {
+class TimePickerFragment : DialogFragment() {
 
     interface Callbacks {
-        fun onDateSelected(date: Date)
+        fun onTimeSelected(date: Date)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -27,35 +29,34 @@ class DatePickerFragment : DialogFragment() {
         val initialHour = calendar.get(Calendar.HOUR_OF_DAY)
         val initialMinute = calendar.get(Calendar.MINUTE)
 
-        val dateListener = DatePickerDialog.OnDateSetListener {
-                _: DatePicker, year: Int, month: Int, day: Int ->
+        val timeListener = TimePickerDialog.OnTimeSetListener {
+                _: TimePicker, hour: Int, minute: Int ->
 
-            val resultDate : Date = GregorianCalendar (year, month, day, initialHour, initialMinute).time
+            val resultDate : Date = GregorianCalendar (initialYear, initialMonth, initialDay, hour, minute).time
 
             targetFragment?.let { fragment ->
-                (fragment as Callbacks).onDateSelected(resultDate)
+                (fragment as TimePickerFragment.Callbacks).onTimeSelected(resultDate)
             }
         }
 
-        return DatePickerDialog(
+        return TimePickerDialog(
             requireContext(),
-            dateListener,
-            initialYear,
-            initialMonth,
-            initialDay
+            timeListener,
+            initialHour,
+            initialMinute,
+            true
         )
     }
 
     companion object {
-        fun newInstance(date: Date): DatePickerFragment {
+        fun newInstance(date: Date): TimePickerFragment {
             val args = Bundle().apply {
                 putSerializable(ARG_DATE, date)
             }
 
-            return DatePickerFragment().apply {
+            return TimePickerFragment().apply {
                 arguments = args
             }
         }
     }
-
 }
