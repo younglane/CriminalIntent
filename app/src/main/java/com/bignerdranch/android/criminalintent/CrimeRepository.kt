@@ -8,6 +8,8 @@ import java.util.*
 import java.util.concurrent.Executors
 
 private const val DATABASE_NAME = "crime-database"
+
+//Will execute on a background thread instead of a main thread
 private val executor = Executors.newSingleThreadExecutor()
 
 class CrimeRepository private constructor(context: Context){
