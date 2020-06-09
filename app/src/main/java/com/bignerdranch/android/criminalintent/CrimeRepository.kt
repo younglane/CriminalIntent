@@ -5,15 +5,17 @@ import androidx.lifecycle.LiveData
 import androidx.room.Room
 import com.bignerdranch.android.criminalintent.database.CrimeDatabase
 import com.bignerdranch.android.criminalintent.database.migration_1_2
+import java.io.File
 import java.util.*
 import java.util.concurrent.Executors
 
 private const val DATABASE_NAME = "crime-database"
 
-//Will execute on a background thread instead of a main thread
-private val executor = Executors.newSingleThreadExecutor()
-
 class CrimeRepository private constructor(context: Context){
+
+    //Will execute on a background thread instead of a main thread
+    private val executor = Executors.newSingleThreadExecutor()
+    private val filesDir = context.applicationContext.filesDir
 
     private val database : CrimeDatabase = Room.databaseBuilder(
         context.applicationContext,
@@ -38,6 +40,8 @@ class CrimeRepository private constructor(context: Context){
             crimeDao.addCrime(crime)
         }
     }
+
+    fun getPhotoFile(crime: Crime): File = File(filesDir, crime.photoFileName)
 
     companion object {
         private var INSTANCE: CrimeRepository? = null
