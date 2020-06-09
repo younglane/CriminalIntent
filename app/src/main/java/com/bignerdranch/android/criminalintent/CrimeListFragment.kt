@@ -4,9 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.widget.ImageView
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -28,6 +26,8 @@ class CrimeListFragment : Fragment() {
     private var callbacks: Callbacks? = null
 
     private lateinit var crimeRecyclerView: RecyclerView
+    private lateinit var addCrimeLayout: LinearLayout
+    private lateinit var addCrimeButton: Button
     private var adapter: CrimeAdapter? = CrimeAdapter(emptyList())
 
     //To assoicate it with CrimeListViewModel (to use functions)
@@ -56,9 +56,19 @@ class CrimeListFragment : Fragment() {
 
         crimeRecyclerView =
             view.findViewById(R.id.crime_recycler_view) as RecyclerView
+        addCrimeLayout = view.findViewById(R.id.crime_layout) as LinearLayout
+        addCrimeButton = view.findViewById(R.id.add_crime) as Button
+
         crimeRecyclerView.layoutManager = LinearLayoutManager(context)
         crimeRecyclerView.adapter = adapter
         //LayoutManager positions every item and defines how scrolling works (ex. grid or line)
+
+        crimeRecyclerView.visibility = View.GONE
+        addCrimeLayout.visibility = View.GONE
+
+        addCrimeButton.setOnClickListener {
+            addCrime()
+        }
 
         return view
     }
@@ -82,7 +92,7 @@ class CrimeListFragment : Fragment() {
         callbacks = null
     }
 
-    //fun for creating the menu and responding to the selection of an action item
+    //Creates the menu/inflates and responding to the selection of an action item
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.fragment_crime_list, menu)
@@ -93,20 +103,33 @@ class CrimeListFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.new_crime -> {
-                val crime = Crime()
-                crimeListViewModel.addCrime(crime)
-                callbacks?.onCrimeSelected(crime.id)
+                addCrime()
                 true
             }
             else -> return super.onOptionsItemSelected(item)
         }
     }
 
+    private fun addCrime() {
+        val crime = Crime()
+        crimeListViewModel.addCrime(crime)
+        callbacks?.onCrimeSelected(crime.id)
+    }
+
     //Connects the Adapter to RecyclerView to display UI
     private fun updateUI(crimes: List<Crime>) {
-        adapter = CrimeAdapter(crimes)
-        crimeRecyclerView.adapter = adapter
+        if(crimes.size == 0) {
+            crimeRecyclerView.visibility = View.GONE
+            addCrimeLayout.visibility = View.VISIBLE
+        } else {
+            crimeRecyclerView.visibility = View.VISIBLE
+            addCrimeLayout.visibility = View.GONE
+
+            adapter = CrimeAdapter(crimes)
+            crimeRecyclerView.adapter = adapter
+        }
     }
+
 
     /*
     CrimeHolder stores a reference to an item's view (sometimes references a specific widgets
